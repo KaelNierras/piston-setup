@@ -1,7 +1,26 @@
-git init piston-setup
-cd piston-setup
-git remote add origin https://github.com/YOUR_USERNAME/piston-setup.git
-cp /path/to/setup_piston.sh .
-git add setup_piston.sh
-git commit -m "Add piston auto-setup script"
-git push -u origin master
+#!/bin/bash
+set -e
+
+echo "🔥 Updating system..."
+apt update && apt upgrade -y
+
+echo "🐳 Installing Docker..."
+apt install -y docker.io docker-compose ufw git curl
+
+echo "🔥 Cloning Piston repo..."
+git clone https://github.com/engineer-man/piston /opt/piston || (cd /opt/piston && git pull)
+
+echo "🐳 Pulling Docker images..."
+cd /opt/piston
+docker compose pull
+
+echo "▶️ Starting Piston..."
+docker compose up -d
+
+echo "🌐 Configuring firewall..."
+ufw allow 22
+ufw allow 2000
+ufw --force enable
+
+echo "✅ Piston is installed and running on port 2000"
+echo "Test with: curl http://YOUR_SERVER_IP:2000/api/v2/runtimes"
