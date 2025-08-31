@@ -4,14 +4,8 @@ set -e
 echo "🔥 Updating system..."
 apt update && apt upgrade -y
 
-echo "🐳 Installing Docker, Docker Compose, Node.js, and dependencies..."
-apt install -y docker.io docker-compose git curl npm ufw
-
-# Optional: Install Node.js >= 15 if system version is lower
-if ! node -v | grep -q "v1[5-9]\|v[2-9][0-9]"; then
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-    apt install -y nodejs
-fi
+echo "🐳 Installing Docker and dependencies..."
+apt install -y docker.io docker-compose ufw git curl nodejs npm
 
 echo "🔥 Cloning Piston repo..."
 if [ ! -d "/opt/piston" ]; then
@@ -20,18 +14,21 @@ else
     cd /opt/piston && git pull
 fi
 
-echo "▶️ Starting Piston API container..."
 cd /opt/piston
-docker-compose up -d api
 
-echo "🐙 Installing Piston CLI dependencies..."
-cd cli && npm install && cd -
+echo "▶️ Starting Piston API container..."
+docker compose up -d api
 
-echo "🛠 Installing C and C++ runtimes..."
-cd cli
-node index.js install c
-node index.js install cpp
-cd ..
+# Wait a few seconds for the container to initialize
+sleep 5
+
+echo "🐚 Installing C and C++ runtimes inside the container..."
+docker exec -it piston_api bash -c "
+    cd cli &&
+    npm install &&
+    node index.js ppman install c &&
+    node index.js ppman install cpp
+"
 
 echo "🌐 Configuring firewall..."
 ufw allow 22
