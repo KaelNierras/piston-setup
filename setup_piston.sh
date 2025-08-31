@@ -16,10 +16,10 @@ fi
 
 echo "🐳 Pulling Docker images..."
 cd /opt/piston
-docker compose pull
+docker-compose pull
 
 echo "▶️ Starting Piston..."
-docker compose up -d
+docker-compose up -d
 
 echo "🌐 Configuring firewall..."
 ufw allow 22
