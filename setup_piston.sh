@@ -5,7 +5,7 @@ echo "🔥 Updating system..."
 apt update && apt upgrade -y
 
 echo "🐳 Installing Docker and dependencies..."
-apt install -y docker.io docker-compose ufw git curl nodejs npm
+apt install -y docker.io docker-compose ufw git curl nodejs npm build-essential
 
 echo "🔥 Cloning Piston repo..."
 if [ ! -d "/opt/piston" ]; then
@@ -14,26 +14,31 @@ else
     cd /opt/piston && git pull
 fi
 
+echo "🐳 Pulling Docker images..."
 cd /opt/piston
+docker compose pull
 
-echo "▶️ Starting Piston API container..."
+echo "▶️ Starting Piston API..."
 docker compose up -d api
-
-# Wait a few seconds for the API to be ready
-sleep 10
-
-echo "🐚 Installing C and C++ runtimes via CLI inside the container..."
-docker exec -it piston_api bash -c "
-    cd cli &&
-    npm install &&
-    node index.js -u http://localhost:2000 ppman install c &&
-    node index.js -u http://localhost:2000 ppman install cpp
-"
 
 echo "🌐 Configuring firewall..."
 ufw allow 22
 ufw allow 2000
 ufw --force enable
 
-echo "✅ Piston is installed and running on port 2000 with C and C++ runtimes"
+echo "✅ Piston API is running on port 2000"
+
+echo "⚡ Installing default runtimes (C, C++, Python, Node.js)..."
+cd /opt/piston/cli
+
+# Install C runtime
+node index.js ppman install gcc=10.2.0
+
+# Install Python latest
+node index.js ppman install python
+
+# Install Node.js latest
+node index.js ppman install node
+
+echo "✅ Runtimes installed successfully!"
 echo "Test with: curl http://YOUR_SERVER_IP:2000/api/v2/runtimes"
