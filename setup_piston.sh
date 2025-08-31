@@ -4,11 +4,15 @@ set -e
 echo "🔥 Updating system..."
 apt update && apt upgrade -y
 
-echo "🐳 Installing Docker..."
+echo "🐳 Installing Docker and dependencies..."
 apt install -y docker.io docker-compose ufw git curl
 
 echo "🔥 Cloning Piston repo..."
-git clone https://github.com/engineer-man/piston /opt/piston || (cd /opt/piston && git pull)
+if [ ! -d "/opt/piston" ]; then
+    git clone https://github.com/engineer-man/piston /opt/piston
+else
+    cd /opt/piston && git pull
+fi
 
 echo "🐳 Pulling Docker images..."
 cd /opt/piston
