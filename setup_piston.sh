@@ -19,15 +19,15 @@ cd /opt/piston
 echo "▶️ Starting Piston API container..."
 docker compose up -d api
 
-# Wait a few seconds for the container to initialize
-sleep 5
+# Wait a few seconds for the API to be ready
+sleep 10
 
-echo "🐚 Installing C and C++ runtimes inside the container..."
+echo "🐚 Installing C and C++ runtimes via CLI inside the container..."
 docker exec -it piston_api bash -c "
     cd cli &&
     npm install &&
-    node index.js ppman install c &&
-    node index.js ppman install cpp
+    node index.js -u http://localhost:2000 ppman install c &&
+    node index.js -u http://localhost:2000 ppman install cpp
 "
 
 echo "🌐 Configuring firewall..."
