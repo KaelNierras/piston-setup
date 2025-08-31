@@ -18,7 +18,7 @@ echo "🐳 Pulling Docker images..."
 cd /opt/piston
 docker-compose pull
 
-echo "▶️ Starting Piston..."
+echo "▶️ Starting Piston (API + Worker)..."
 docker-compose up -d
 
 echo "🌐 Configuring firewall..."
