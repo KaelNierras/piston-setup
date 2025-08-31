@@ -4,10 +4,10 @@ set -e
 echo "🔥 Updating system..."
 apt update && apt upgrade -y
 
-echo "🐳 Installing Docker and dependencies..."
+echo "🐳 Installing Docker, Node.js, and dependencies..."
 apt install -y docker.io docker-compose ufw git curl nodejs npm build-essential
 
-echo "🔥 Cloning Piston repo..."
+echo "🔥 Cloning or updating Piston repo..."
 if [ ! -d "/opt/piston" ]; then
     git clone https://github.com/engineer-man/piston /opt/piston
 else
@@ -16,29 +16,29 @@ fi
 
 echo "🐳 Pulling Docker images..."
 cd /opt/piston
-docker compose pull
+docker-compose pull
 
 echo "▶️ Starting Piston API..."
-docker compose up -d api
+docker-compose up -d api
+
+echo "🔥 Installing CLI dependencies..."
+cd /opt/piston/cli
+npm install
+cd -
+
+echo "🐍 Installing default runtimes (C, C++, Python, Java, JavaScript)..."
+cd /opt/piston/cli
+node index.js ppman install c
+node index.js ppman install cpp
+node index.js ppman install python
+node index.js ppman install java
+node index.js ppman install node
+cd -
 
 echo "🌐 Configuring firewall..."
 ufw allow 22
 ufw allow 2000
 ufw --force enable
 
-echo "✅ Piston API is running on port 2000"
-
-echo "⚡ Installing default runtimes (C, C++, Python, Node.js)..."
-cd /opt/piston/cli
-
-# Install C runtime
-node index.js ppman install gcc=10.2.0
-
-# Install Python latest
-node index.js ppman install python
-
-# Install Node.js latest
-node index.js ppman install node
-
-echo "✅ Runtimes installed successfully!"
+echo "✅ Piston is installed and running on port 2000 with default runtimes"
 echo "Test with: curl http://YOUR_SERVER_IP:2000/api/v2/runtimes"
